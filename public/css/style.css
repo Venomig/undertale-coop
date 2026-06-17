@@ -1,0 +1,153 @@
+/* ===== Estilo Undertale: preto, branco, pixelado ===== */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root { --ut-font: 'Press Start 2P', monospace; }
+
+body {
+  font-family: var(--ut-font);
+  background: #000;
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  image-rendering: pixelated;
+  overflow-x: hidden;
+}
+
+.screen { width: 100%; max-width: 1100px; padding: 20px; }
+.hidden { display: none !important; }
+
+/* ---------- LOBBY ---------- */
+#lobby { text-align: center; }
+.title { font-size: 42px; letter-spacing: 4px; margin-top: 30px; text-shadow: 0 0 18px #fff3; }
+.title span { color: #ffd84d; }
+.subtitle { color: #9b9b9b; font-size: 11px; margin: 14px 0 26px; }
+
+.panel {
+  background: #0b0b0b;
+  border: 4px solid #fff;
+  border-radius: 4px;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px;
+  text-align: left;
+}
+
+.field { display: block; margin-bottom: 18px; }
+.field span, .fieldLabel { display: block; font-size: 10px; color: #cfcfcf; margin-bottom: 8px; }
+input[type=text], #nameInput {
+  width: 100%; padding: 12px; background: #000; color: #fff;
+  border: 2px solid #fff; font-family: var(--ut-font); font-size: 12px; border-radius: 3px;
+}
+
+.roleSelect { display: flex; gap: 10px; margin-bottom: 18px; }
+.roleBtn {
+  flex: 1; padding: 12px 6px; font-family: var(--ut-font); font-size: 9px;
+  background: #000; color: #fff; border: 2px solid #555; cursor: pointer; border-radius: 3px;
+}
+.roleBtn.active { border-color: #ffd84d; color: #ffd84d; box-shadow: 0 0 10px #ffd84d55; }
+
+.colors { display: flex; gap: 10px; flex-wrap: wrap; }
+.colorBtn {
+  width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+  background: var(--c); border: 3px solid #000; outline: 2px solid #444;
+}
+.colorBtn.active { outline: 3px solid #fff; box-shadow: 0 0 12px var(--c); }
+
+.bigBtn {
+  display: block; width: 100%; margin-top: 22px; padding: 16px;
+  font-family: var(--ut-font); font-size: 12px; background: #000; color: #fff;
+  border: 3px solid #fff; cursor: pointer; border-radius: 3px; transition: .12s;
+}
+.bigBtn:hover { background: #fff; color: #000; }
+.bigBtn.small { font-size: 9px; padding: 11px; margin-top: 10px; }
+.bigBtn.fire { border-color: #ff4d4d; color: #ff4d4d; }
+.bigBtn.fire:hover { background: #ff4d4d; color: #000; }
+.bigBtn.heal { border-color: #39d353; color: #39d353; }
+.bigBtn.heal:hover { background: #39d353; color: #000; }
+.bigBtn.ghost { border-color: #555; color: #888; font-size: 8px; }
+
+.err { color: #ff4d4d; font-size: 9px; margin-top: 12px; min-height: 12px; text-align: center; }
+.hint { color: #666; font-size: 9px; margin-top: 22px; }
+
+/* ---------- JOGO ---------- */
+#game { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+.battleWrap { display: flex; flex-direction: column; gap: 10px; }
+
+.topbar { display: flex; justify-content: space-between; align-items: center; }
+.phaseLabel { font-size: 12px; color: #ffd84d; }
+.timer { font-size: 14px; color: #fff; }
+
+#canvas {
+  background: #000; border: 4px solid #fff; border-radius: 2px; display: block;
+}
+
+.masterBar, .mercyBar { display: flex; align-items: center; gap: 10px; font-size: 9px; }
+.masterName { color: #ff6b6b; min-width: 70px; }
+.mercyBar span:first-child { color: #ffe14d; min-width: 90px; }
+.hpTrack { flex: 1; height: 16px; background: #330; border: 2px solid #fff; border-radius: 2px; overflow: hidden; }
+.hpFill { height: 100%; width: 100%; transition: width .25s; }
+.hpFill.master { background: #ff3b3b; }
+.hpFill.mercy { background: #ffe14d; width: 0; }
+.hpTxt { font-size: 9px; min-width: 56px; }
+
+/* ---------- Painel lateral ---------- */
+.side {
+  width: 260px; background: #0b0b0b; border: 3px solid #fff; border-radius: 4px;
+  padding: 14px; max-height: 520px; overflow-y: auto;
+}
+.side h3 { font-size: 10px; color: #9b9b9b; margin: 6px 0 10px; }
+.playerList { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.pRow { display: flex; align-items: center; gap: 8px; font-size: 8px; }
+.pHeart { width: 12px; height: 12px; flex-shrink: 0; }
+.pName { width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pHpTrack { flex: 1; height: 10px; background: #300; border: 1px solid #fff; border-radius: 2px; overflow: hidden; }
+.pHpFill { height: 100%; background: #ffe14d; }
+.pHp { width: 42px; text-align: right; }
+.pRow.dead { opacity: .4; }
+.pRow.acted .pName::after { content: ' ✔'; color: #39d353; }
+
+.log { font-size: 8px; line-height: 1.7; color: #cfcfcf; }
+.log div { margin-bottom: 4px; }
+
+/* ---------- Menu de ação do jogador ---------- */
+.actionMenu { display: flex; gap: 10px; margin-top: 16px; width: 100%; justify-content: center; flex-wrap: wrap; }
+.actBtn {
+  flex: 1; min-width: 130px; padding: 16px; font-family: var(--ut-font); font-size: 11px;
+  background: #000; color: #fff; border: 3px solid #fff; cursor: pointer; border-radius: 3px;
+}
+.actBtn.fight { border-color: #ff4d4d; color: #ff4d4d; }
+.actBtn.item  { border-color: #39d353; color: #39d353; }
+.actBtn.mercy { border-color: #ffe14d; color: #ffe14d; }
+.actBtn:hover { background: #fff1; }
+.actHint { margin-top: 14px; font-size: 10px; color: #8fd; text-align: center; }
+
+/* ---------- Painel do mestre ---------- */
+.masterPanel {
+  width: 280px; background: #0b0b0b; border: 3px solid #ff6b6b; border-radius: 4px; padding: 16px;
+}
+.masterPanel h3 { font-size: 10px; color: #ff6b6b; margin-bottom: 8px; }
+.masterControls { margin-top: 8px; }
+.ctrlRow { margin: 14px 0; font-size: 9px; }
+.ctrlRow > span { display: block; margin-bottom: 8px; color: #cfcfcf; }
+.dirGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.dirBtn {
+  padding: 10px 0; font-size: 14px; background: #000; color: #fff;
+  border: 2px solid #555; cursor: pointer; border-radius: 3px;
+}
+.dirBtn.active { border-color: #ffd84d; color: #ffd84d; }
+.slider input { width: 100%; }
+.toggle { display: flex; align-items: center; gap: 8px; }
+.toggle input { width: 18px; height: 18px; }
+.split { display: flex; gap: 8px; }
+.split .bigBtn { margin-top: 0; }
+
+input[type=range] { accent-color: #ffd84d; }
+
+@media (max-width: 720px) {
+  .side, .masterPanel { width: 100%; }
+  #canvas { width: 100%; height: auto; }
+}

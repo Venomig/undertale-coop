@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UNDERTALE CO-OP</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ================= LOBBY ================= -->
+<div id="lobby" class="screen">
+  <h1 class="title">UNDER<span>TALE</span> CO-OP</h1>
+  <p class="subtitle">Multiplayer cooperativo &mdash; almas vs. o Mestre</p>
+
+  <div class="panel">
+    <label class="field">
+      <span>Seu nome</span>
+      <input id="nameInput" maxlength="16" placeholder="Frisk..." />
+    </label>
+
+    <div class="roleSelect">
+      <button class="roleBtn active" data-role="player">🔆 JOGADOR (Alma)</button>
+      <button class="roleBtn" data-role="master">🎭 MESTRE</button>
+    </div>
+
+    <div id="colorPick">
+      <span class="fieldLabel">Cor da sua alma</span>
+      <div class="colors">
+        <button class="colorBtn active" data-color="red"    style="--c:#ff2b2b"></button>
+        <button class="colorBtn" data-color="blue"   style="--c:#2b6bff"></button>
+        <button class="colorBtn" data-color="orange" style="--c:#ff9b2b"></button>
+        <button class="colorBtn" data-color="green"  style="--c:#39d353"></button>
+        <button class="colorBtn" data-color="purple" style="--c:#a64bff"></button>
+        <button class="colorBtn" data-color="cyan"   style="--c:#28e0e0"></button>
+        <button class="colorBtn" data-color="yellow" style="--c:#ffe14d"></button>
+      </div>
+    </div>
+
+    <button id="joinBtn" class="bigBtn">ENTRAR NA BATALHA</button>
+    <p id="errMsg" class="err"></p>
+  </div>
+
+  <p class="hint">Abra esta página em vários navegadores/abas: 1 mestre + vários jogadores.</p>
+</div>
+
+<!-- ================= JOGO ================= -->
+<div id="game" class="screen hidden">
+  <div class="battleWrap">
+    <div class="topbar">
+      <div id="phaseLabel" class="phaseLabel">AGUARDANDO...</div>
+      <div id="timer" class="timer"></div>
+    </div>
+
+    <canvas id="canvas" width="580" height="360"></canvas>
+
+    <!-- Barra de vida do mestre -->
+    <div class="masterBar">
+      <span class="masterName" id="masterName">MESTRE</span>
+      <div class="hpTrack"><div id="masterHp" class="hpFill master"></div></div>
+      <span id="masterHpTxt" class="hpTxt"></span>
+    </div>
+
+    <!-- Misericórdia -->
+    <div class="mercyBar">
+      <span>MISERICÓRDIA</span>
+      <div class="hpTrack"><div id="mercyFill" class="hpFill mercy"></div></div>
+    </div>
+  </div>
+
+  <!-- Painel lateral: vidas dos jogadores + log -->
+  <aside class="side">
+    <h3>ALMAS</h3>
+    <div id="playerList" class="playerList"></div>
+    <h3>* * *</h3>
+    <div id="log" class="log"></div>
+  </aside>
+
+  <!-- ===== Controles do JOGADOR no turno dele ===== -->
+  <div id="playerActions" class="actionMenu hidden">
+    <button class="actBtn fight" data-act="fight">⚔ LUTAR</button>
+    <button class="actBtn act"   data-act="act">💬 CONVERSAR</button>
+    <button class="actBtn item"  data-act="item">❤ CURAR</button>
+    <button class="actBtn mercy" data-act="mercy">🙏 PIEDADE</button>
+  </div>
+  <div id="actHint" class="actHint hidden">Use as <b>SETINHAS</b> do teclado para desviar das facas!</div>
+
+  <!-- ===== Painel do MESTRE ===== -->
+  <div id="masterPanel" class="masterPanel hidden">
+    <h3>🎭 CONTROLE DO MESTRE</h3>
+    <button id="startBtn" class="bigBtn small">INICIAR BATALHA</button>
+
+    <div class="masterControls">
+      <div class="ctrlRow">
+        <span>Direção da faca</span>
+        <div class="dirGrid">
+          <button class="dirBtn" data-dir="up">↑</button>
+          <button class="dirBtn" data-dir="left">←</button>
+          <button class="dirBtn active" data-dir="down">↓</button>
+          <button class="dirBtn" data-dir="right">→</button>
+        </div>
+      </div>
+
+      <label class="ctrlRow slider">
+        <span>Dano: <b id="dmgVal">3</b></span>
+        <input id="dmg" type="range" min="1" max="15" value="3" />
+      </label>
+
+      <label class="ctrlRow slider">
+        <span>Velocidade: <b id="spdVal">220</b></span>
+        <input id="spd" type="range" min="80" max="600" value="220" step="10" />
+      </label>
+
+      <label class="ctrlRow toggle">
+        <input id="homing" type="checkbox" />
+        <span>🎯 Teleguiada (persegue a alma)</span>
+      </label>
+
+      <button id="fireBtn" class="bigBtn small fire">🔪 LANÇAR FACA</button>
+
+      <div class="ctrlRow split">
+        <button id="healBtn" class="bigBtn small heal">❤ CURAR JOGADORES</button>
+        <button id="endTurnBtn" class="bigBtn small">⏭ PASSAR O TURNO</button>
+      </div>
+      <button id="resetBtn" class="bigBtn small ghost">↺ Reiniciar batalha</button>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

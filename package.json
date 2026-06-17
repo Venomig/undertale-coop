@@ -1,0 +1,16 @@
+{
+  "name": "undertale-coop",
+  "version": "1.0.0",
+  "description": "Jogo multiplayer co-op estilo Undertale com mestre controlando os ataques",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  }
+}
