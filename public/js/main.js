@@ -66,6 +66,7 @@ document.querySelectorAll('.dirBtn').forEach(b => {
 
 $('dmg').oninput = (e) => $('dmgVal').textContent = e.target.value;
 $('spd').oninput = (e) => $('spdVal').textContent = e.target.value;
+$('blasterPos').oninput = (e) => $('blasterPosVal').textContent = e.target.value + '%';
 
 $('startBtn').onclick = () => socket.emit('startBattle');
 $('fireBtn').onclick = () => socket.emit('attack', {
@@ -73,6 +74,11 @@ $('fireBtn').onclick = () => socket.emit('attack', {
   homing: $('homing').checked,
   damage: parseInt($('dmg').value, 10),
   speed: parseInt($('spd').value, 10),
+});
+$('blasterBtn').onclick = () => socket.emit('blaster', {
+  dir: masterDir,
+  pos: parseInt($('blasterPos').value, 10) / 100,
+  damage: parseInt($('dmg').value, 10),
 });
 $('healBtn').onclick = () => socket.emit('healPlayers', 5);
 $('endTurnBtn').onclick = () => socket.emit('endAttackTurn');
@@ -178,7 +184,7 @@ function updateHUD(s) {
   // botões do mestre: habilita conforme a fase
   if (myRole === 'master') {
     const inAttack = s.phase === 'master_attack';
-    ['fireBtn', 'endTurnBtn'].forEach(id => $(id).disabled = !inAttack);
+    ['fireBtn', 'blasterBtn', 'endTurnBtn'].forEach(id => $(id).disabled = !inAttack);
     $('startBtn').style.display =
       (s.phase === 'lobby' || s.phase === 'victory' || s.phase === 'defeat') ? 'block' : 'none';
   }
@@ -207,6 +213,10 @@ function render() {
     // durante o turno dos jogadores mostra o "rosto" do mestre
     if (s.phase === 'player_turn') {
       drawMaster(ctx, canvas.width / 2, 70);
+    }
+    // gaster blasters (desenhados atrás das facas/almas)
+    if (s.blasters) {
+      for (const b of s.blasters) drawGasterBlaster(ctx, b, canvas.width, canvas.height);
     }
     // facas
     for (const k of s.knives) {

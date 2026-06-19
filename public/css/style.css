@@ -68,6 +68,8 @@ input[type=text], #nameInput {
 .bigBtn.fire:hover { background: #ff4d4d; color: #000; }
 .bigBtn.heal { border-color: #39d353; color: #39d353; }
 .bigBtn.heal:hover { background: #39d353; color: #000; }
+.bigBtn.blaster { border-color: #7fefff; color: #7fefff; }
+.bigBtn.blaster:hover { background: #7fefff; color: #000; }
 .bigBtn.ghost { border-color: #555; color: #888; font-size: 8px; }
 
 .err { color: #ff4d4d; font-size: 9px; margin-top: 12px; min-height: 12px; text-align: center; }

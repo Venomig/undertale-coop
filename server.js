@@ -16,6 +16,9 @@ const BOX = { w: 580, h: 360 };          // tamanho da "caixa de batalha"
 const SOUL = 16;                          // tamanho da alma (coração)
 const PLAYER_SPEED = 210;                 // px/s
 const KNIFE = { w: 14, h: 46 };           // tamanho da faca
+const BEAM_THICK = 44;                     // espessura do laser do Gaster Blaster
+const BLASTER_CHARGE_MS = 1000;            // tempo de aviso/carga antes de disparar
+const BLASTER_FIRE_MS = 650;              // duração do laser ativo
 const TICK_HZ = 30;
 const TICK_MS = 1000 / TICK_HZ;
 const ATTACK_PHASE_MS = 60000;            // 60s de turno de ataque do mestre
@@ -40,6 +43,8 @@ const game = {
   master: null,            // { id, name, hp, maxHp }
   knives: [],
   nextKnifeId: 1,
+  blasters: [],
+  nextBlasterId: 1,
   phaseEndsAt: 0,
   mercy: 0,
   log: [],
@@ -58,6 +63,7 @@ function alivePlayers() {
 function startMasterAttack() {
   game.phase = 'master_attack';
   game.knives = [];
+  game.blasters = [];
   game.phaseEndsAt = Date.now() + ATTACK_PHASE_MS;
   game.acted = {};
   // reposiciona as almas no centro
@@ -72,6 +78,7 @@ function startMasterAttack() {
 function startPlayerTurn() {
   game.phase = 'player_turn';
   game.knives = [];
+  game.blasters = [];
   game.phaseEndsAt = Date.now() + PLAYER_TURN_MS;
   game.acted = {};
   logMsg('* É a vez dos jogadores. Escolham sua ação!');
@@ -136,6 +143,36 @@ function knifeRect(k) {
 
 function aabb(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+// ----- Spawn de Gaster Blaster --------------------------------------------
+// dir: direção em que o LASER dispara. pos: 0..1 = faixa (posição perpendicular).
+function spawnBlaster({ dir, pos, damage }) {
+  damage = Math.max(1, Math.min(99, damage | 0));
+  pos = Math.max(0, Math.min(1, +pos || 0));
+  const vertical = dir === 'up' || dir === 'down';
+  const now = Date.now();
+  const b = {
+    id: game.nextBlasterId++,
+    dir,
+    vertical,
+    damage,
+    bornAt: now,
+    chargeEnd: now + BLASTER_CHARGE_MS,
+    fireEnd: now + BLASTER_CHARGE_MS + BLASTER_FIRE_MS,
+  };
+  // posição (canto) do feixe no eixo perpendicular
+  if (vertical) b.beamX = pos * (BOX.w - BEAM_THICK);
+  else          b.beamY = pos * (BOX.h - BEAM_THICK);
+  game.blasters.push(b);
+  logMsg('* ☠ O mestre invoca um GASTER BLASTER! Carregando...');
+}
+
+// retângulo do laser (só faz dano enquanto estiver disparando)
+function beamRect(b) {
+  return b.vertical
+    ? { x: b.beamX, y: 0, w: BEAM_THICK, h: BOX.h }
+    : { x: 0, y: b.beamY, w: BOX.w, h: BEAM_THICK };
 }
 
 // ----- Loop principal ------------------------------------------------------
@@ -209,6 +246,24 @@ setInterval(() => {
       return k.x > -m && k.x < BOX.w + m && k.y > -m && k.y < BOX.h + m;
     });
 
+    // Gaster Blasters: causam dano apenas durante a fase de disparo
+    for (const b of game.blasters) {
+      if (now < b.chargeEnd || now >= b.fireEnd) continue; // carregando ou acabou
+      const beam = beamRect(b);
+      for (const p of Object.values(game.players)) {
+        if (p.hp <= 0) continue;
+        if (now < p.invUntil) continue;
+        const sr = { x: p.x, y: p.y, w: SOUL, h: SOUL };
+        if (aabb(beam, sr)) {
+          p.hp = Math.max(0, p.hp - b.damage);
+          p.invUntil = now + IFRAMES_MS;
+          logMsg(`* ${p.name} foi atingido pelo Gaster Blaster! ${b.damage} de dano!`);
+          if (p.hp <= 0) logMsg(`* A alma de ${p.name} se quebrou!`);
+        }
+      }
+    }
+    game.blasters = game.blasters.filter(b => now < b.fireEnd);
+
     if (checkEndConditions()) { /* fim */ }
     else if (now >= game.phaseEndsAt) startPlayerTurn();
   }
@@ -240,6 +295,15 @@ function broadcast() {
       id: k.id, x: k.x, y: k.y, angle: k.angle,
       w: KNIFE.w, h: KNIFE.h, homing: k.homing,
     })),
+    blasters: game.blasters.map(b => {
+      const t = Date.now();
+      return {
+        id: b.id, dir: b.dir, vertical: b.vertical, thick: BEAM_THICK,
+        beamX: b.beamX, beamY: b.beamY,
+        state: t < b.chargeEnd ? 'charging' : 'firing',
+        chargeProg: Math.min(1, (t - b.bornAt) / BLASTER_CHARGE_MS),
+      };
+    }),
     mercy: game.mercy,
     mercyToWin: MERCY_TO_WIN,
     timeLeft: Math.max(0, game.phaseEndsAt - Date.now()),
@@ -302,6 +366,16 @@ io.on('connection', (socket) => {
     });
   });
 
+  // ----- mestre dispara um Gaster Blaster -----
+  socket.on('blaster', (cfg) => {
+    if (socket.data.role !== 'master' || game.phase !== 'master_attack') return;
+    spawnBlaster({
+      dir: ['up', 'down', 'left', 'right'].includes(cfg.dir) ? cfg.dir : 'down',
+      pos: cfg.pos,
+      damage: cfg.damage,
+    });
+  });
+
   // ----- mestre cura os jogadores -----
   socket.on('healPlayers', (amount) => {
     if (socket.data.role !== 'master') return;
@@ -349,6 +423,7 @@ io.on('connection', (socket) => {
     if (socket.data.role !== 'master') return;
     game.phase = 'lobby';
     game.knives = [];
+    game.blasters = [];
     game.mercy = 0;
     game.acted = {};
     if (game.master) { game.master.hp = game.master.maxHp; }

@@ -89,6 +89,102 @@ function drawKnife(ctx, cx, cy, angle, homing) {
   ctx.restore();
 }
 
+// Desenha um Gaster Blaster (caveira + laser). `b` é o objeto vindo do servidor.
+function drawGasterBlaster(ctx, b, boxW, boxH) {
+  const firing = b.state === 'firing';
+  const thick = b.thick;
+
+  // -------- Laser / aviso --------
+  ctx.save();
+  if (b.vertical) {
+    const x = b.beamX;
+    if (firing) {
+      ctx.shadowColor = '#7fefff';
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = 'rgba(150,230,255,0.45)';
+      ctx.fillRect(x, 0, thick, boxH);                     // halo do feixe
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.fillRect(x + thick * 0.3, 0, thick * 0.4, boxH); // núcleo branco
+    } else {
+      // linha fina de aviso, pulsando, crescendo conforme carrega
+      ctx.globalAlpha = 0.35 + 0.4 * Math.abs(Math.sin(Date.now() / 70));
+      ctx.fillStyle = '#7fefff';
+      const w = 2 + b.chargeProg * 4;
+      ctx.fillRect(x + thick / 2 - w / 2, 0, w, boxH);
+    }
+  } else {
+    const y = b.beamY;
+    if (firing) {
+      ctx.shadowColor = '#7fefff';
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = 'rgba(150,230,255,0.45)';
+      ctx.fillRect(0, y, boxW, thick);
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.fillRect(0, y + thick * 0.3, boxW, thick * 0.4);
+    } else {
+      ctx.globalAlpha = 0.35 + 0.4 * Math.abs(Math.sin(Date.now() / 70));
+      ctx.fillStyle = '#7fefff';
+      const h = 2 + b.chargeProg * 4;
+      ctx.fillRect(0, y + thick / 2 - h / 2, boxW, h);
+    }
+  }
+  ctx.restore();
+
+  // -------- Cabeça (caveira) na borda, virada para o feixe --------
+  let hx, hy, rot;
+  if (b.vertical) {
+    hx = b.beamX + thick / 2;
+    if (b.dir === 'down') { hy = 22; rot = 0; }
+    else                  { hy = boxH - 22; rot = Math.PI; }
+  } else {
+    hy = b.beamY + thick / 2;
+    if (b.dir === 'right') { hx = 22; rot = -Math.PI / 2; }
+    else                   { hx = boxW - 22; rot = Math.PI / 2; }
+  }
+  ctx.save();
+  ctx.translate(hx, hy);
+  ctx.rotate(rot);
+  drawSkull(ctx, firing, b.chargeProg);
+  ctx.restore();
+}
+
+// Caveira desenhada "olhando para baixo" (focinho na parte de baixo).
+function drawSkull(ctx, firing, chargeProg) {
+  ctx.fillStyle = '#f2f2f7';
+  ctx.strokeStyle = '#b9b9cf';
+  ctx.lineWidth = 1;
+  // crânio
+  ctx.beginPath();
+  ctx.moveTo(-17, -20);
+  ctx.lineTo(17, -20);
+  ctx.lineTo(21, -2);
+  ctx.lineTo(11, 6);
+  ctx.lineTo(7, 20);
+  ctx.lineTo(-7, 20);
+  ctx.lineTo(-11, 6);
+  ctx.lineTo(-21, -2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // órbitas dos olhos (brilham ao carregar/disparar)
+  const glow = firing ? 1 : chargeProg;
+  ctx.save();
+  ctx.shadowColor = '#7fefff';
+  ctx.shadowBlur = 4 + 14 * glow;
+  ctx.fillStyle = firing ? '#bfffff' : `rgba(127,239,255,${0.3 + 0.7 * glow})`;
+  ctx.fillRect(-13, -14, 9, 9);
+  ctx.fillRect(4, -14, 9, 9);
+  ctx.restore();
+
+  // "dentes"/focinho
+  ctx.fillStyle = '#0a0a12';
+  ctx.fillRect(-6, 8, 12, 8);
+  ctx.fillStyle = '#f2f2f7';
+  ctx.fillRect(-2, 8, 2, 8);
+  ctx.fillRect(-6, 11, 12, 2);
+}
+
 // "Rosto" simples do mestre desenhado no topo da caixa durante o turno do jogador.
 function drawMaster(ctx, cx, cy) {
   ctx.save();
